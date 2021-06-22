@@ -48,4 +48,9 @@ var predefinedRules = map[string]string{
 	"zeit.de":              ".summary, .article-body",
 	"zdnet.com":            "div.storyBody",
 	"openingsource.org":    "article.suxing-popup-gallery",
+	"www.naftemporiki.gr":  "#spBody",
+	"www.tovima.gr":        "div.mainpost p",
+	"www.irafina.gr":       "div.entry-content p, div.entry-content li",
+	"www.protothema.gr":    "div.cntTxt",
+	"www.efsyn.gr":         "div.article__body",
 }
