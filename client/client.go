@@ -19,6 +19,9 @@ type Client struct {
 
 // New returns a new Miniflux client.
 func New(endpoint string, credentials ...string) *Client {
+	if endpoint == "" {
+		return nil
+	}
 	if len(credentials) == 2 {
 		return &Client{request: &request{endpoint: endpoint, username: credentials[0], password: credentials[1]}}
 	}
