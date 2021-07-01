@@ -24,7 +24,9 @@ func New(endpoint string, credentials ...string) *Client {
 	endpoint = strings.TrimSuffix(endpoint, "/")
 	endpoint = strings.TrimSuffix(endpoint, "/v1")
 	// trim to https://miniflux.app
-
+	if endpoint == "" {
+		return nil
+	}
 	if len(credentials) == 2 {
 		return &Client{request: &request{endpoint: endpoint, username: credentials[0], password: credentials[1]}}
 	}
