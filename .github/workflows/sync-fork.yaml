@@ -1,0 +1,19 @@
+name: Sync Fork
+
+on:
+  schedule:
+    - cron: '30 22 * * *' # once per day
+  workflow_dispatch: # on button click
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: tgymnich/fork-sync@v1.9
+        with:
+          base: main
+          head: main
+          ignore_fail: true
+          auto_merge: true
+          auto_approve: true
