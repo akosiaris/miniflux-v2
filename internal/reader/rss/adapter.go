@@ -252,6 +252,11 @@ func findEntryDate(rssItem *rssItem) time.Time {
 	}
 
 	parsedDate, err := date.Parse(value)
+	// Ugly as hell but allows us to deal with broken RSS feeds that have a pubDate equal to unix Epoch
+	epoch := time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+	if epoch.Equal(parsedDate) {
+		return time.Now()
+	}
 	if err != nil {
 		slog.Debug("Unable to parse date from RSS feed",
 			slog.String("date", value),
