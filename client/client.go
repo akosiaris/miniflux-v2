@@ -28,6 +28,10 @@ func NewClient(endpoint string, credentials ...string) *Client {
 	// Trim trailing slashes and /v1 from the endpoint.
 	endpoint = strings.TrimSuffix(endpoint, "/")
 	endpoint = strings.TrimSuffix(endpoint, "/v1")
+	// If we end up with an empty string as an endpoint, it's an user input error
+	if endpoint == "" {
+		return nil
+	}
 	switch len(credentials) {
 	case 2:
 		return &Client{request: &request{endpoint: endpoint, username: credentials[0], password: credentials[1]}}
