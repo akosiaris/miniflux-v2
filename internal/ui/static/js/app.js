@@ -71,9 +71,9 @@ function toggleMainMenu(event) {
     const menu = document.querySelector(".header nav ul");
     const menuToggleButton = document.querySelector(".logo");
     if (menu.classList.contains("js-menu-show")) {
-        menuToggleButton.setAttribute("aria-expanded", false);
+        menuToggleButton.setAttribute("aria-expanded", "false");
     } else {
-        menuToggleButton.setAttribute("aria-expanded", true);
+        menuToggleButton.setAttribute("aria-expanded", "true");
     }
     menu.classList.toggle("js-menu-show");
 }
@@ -151,7 +151,7 @@ function handleEntryStatus(item, element, setToRead) {
     const toasting = !element;
     const currentEntry = findEntry(element);
     if (currentEntry) {
-        if (!setToRead || currentEntry.querySelector(":is(a, button)[data-toggle-status]").dataset.value == "unread") {
+        if (!setToRead || currentEntry.querySelector(":is(a, button)[data-toggle-status]").dataset.value === "unread") {
             toggleEntryStatus(currentEntry, toasting);
         }
         if (isListView() && currentEntry.classList.contains('current-item')) {
@@ -274,7 +274,7 @@ function saveEntry(element, toasting) {
     request.withCallback(() => {
         element.textContent = "";
         appendIconLabel(element, element.dataset.labelDone);
-        element.dataset.completed = true;
+        element.dataset.completed = "true";
         if (toasting) {
             const iconElement = document.querySelector("template#icon-save");
             showToast(element.dataset.toastDone, iconElement);
@@ -380,7 +380,7 @@ function openOriginalLink(openLinkInCurrentTab) {
 
         const currentItem = document.querySelector(".current-item");
         // If we are not on the list of starred items, move to the next item
-        if (document.location.href != document.querySelector(':is(a, button)[data-page=starred]').href) {
+        if (document.location.href !== document.querySelector(':is(a, button)[data-page=starred]').href) {
             goToListItem(1);
         }
         markEntryAsRead(currentItem);
@@ -396,7 +396,6 @@ function openCommentLink(openLinkInCurrentTab) {
             } else {
                 DomHelper.openNewTab(entryLink.getAttribute("href"));
             }
-            return;
         }
     } else {
         const currentItemCommentsLink = document.querySelector(".current-item :is(a, button)[data-comments-link]");
@@ -434,7 +433,7 @@ function unsubscribeFromFeed() {
  * @param {string} page Page to redirect to.
  * @param {boolean} fallbackSelf Refresh actual page if the page is not found.
  */
-function goToPage(page, fallbackSelf) {
+function goToPage(page, fallbackSelf = false) {
     const element = document.querySelector(":is(a, button)[data-page=" + page + "]");
 
     if (element) {
@@ -522,9 +521,9 @@ function goToListItem(offset) {
             // By default adjust selection by offset
             let itemOffset = (i + offset + items.length) % items.length;
             // Allow jumping to top or bottom
-            if (offset == TOP) {
+            if (offset === TOP) {
                 itemOffset = 0;
-            } else if (offset == BOTTOM) {
+            } else if (offset === BOTTOM) {
                 itemOffset = items.length - 1;
             }
             const item = items[itemOffset];
@@ -595,7 +594,7 @@ function findEntry(element) {
 }
 
 function handleConfirmationMessage(linkElement, callback) {
-    if (linkElement.tagName != 'A' && linkElement.tagName != "BUTTON") {
+    if (linkElement.tagName !== 'A' && linkElement.tagName !== "BUTTON") {
         linkElement = linkElement.parentNode;
     }
 
@@ -781,7 +780,7 @@ function handleMediaControl(button) {
     enclosures.forEach((enclosure) => {
         switch (action) {
         case "seek":
-            enclosure.currentTime = Math.min(enclosure.currentTime + value, 0);
+            enclosure.currentTime = Math.max(enclosure.currentTime + value, 0);
             break;
         case "speed":
             // I set a floor speed of 0.25 to avoid too slow speed where it gives the impression it stopped.
