@@ -10,11 +10,11 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.24
-	github.com/prometheus/client_golang v1.21.0
+	github.com/prometheus/client_golang v1.21.1
 	github.com/tdewolff/minify/v2 v2.21.3
 	golang.org/x/crypto v0.35.0
 	golang.org/x/image v0.24.0
-	golang.org/x/net v0.35.0
+	golang.org/x/net v0.36.0
 	golang.org/x/oauth2 v0.27.0
 	golang.org/x/term v0.29.0
 )
