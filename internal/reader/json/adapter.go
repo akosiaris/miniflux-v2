@@ -83,8 +83,10 @@ func (j *JSONAdapter) BuildFeed(baseURL string) *model.Feed {
 		// The entry title is optional, so we need to find a fallback.
 		if entry.Title == "" {
 			for _, value := range []string{item.Summary, item.ContentText, item.ContentHTML} {
+				value = strings.TrimSpace(value)
 				if value != "" {
 					entry.Title = sanitizer.TruncateHTML(value, 100)
+					break
 				}
 			}
 		}
@@ -167,7 +169,7 @@ func (j *JSONAdapter) BuildFeed(baseURL string) *model.Feed {
 		entry.Tags = slices.Compact(entry.Tags)
 
 		// Generate a hash for the entry.
-		for _, value := range []string{item.ID, item.URL, item.ContentText + item.ContentHTML + item.Summary} {
+		for _, value := range []string{item.ID, item.URL, item.ExternalURL, item.ContentText + item.ContentHTML + item.Summary} {
 			value = strings.TrimSpace(value)
 			if value != "" {
 				entry.Hash = crypto.SHA256(value)
