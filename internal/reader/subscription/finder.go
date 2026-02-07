@@ -5,7 +5,6 @@ package subscription // import "miniflux.app/v2/internal/reader/subscription"
 
 import (
 	"bytes"
-	"io"
 	"log/slog"
 	"net/url"
 	"strings"
@@ -71,7 +70,7 @@ func (f *subscriptionFinder) FindSubscriptions(websiteURL, rssBridgeURL string, 
 
 	// Step 2) Find the canonical URL of the website.
 	slog.Debug("Try to find the canonical URL of the website", slog.String("website_url", websiteURL))
-	websiteURL = f.findCanonicalURL(websiteURL, responseHandler.ContentType(), bytes.NewReader(responseBody))
+	websiteURL = f.findCanonicalURL(websiteURL, responseHandler.ContentType(), responseBody)
 
 	// Step 3) Check if the website URL is a YouTube channel.
 	slog.Debug("Try to detect feeds for a YouTube page", slog.String("website_url", websiteURL))
@@ -87,7 +86,7 @@ func (f *subscriptionFinder) FindSubscriptions(websiteURL, rssBridgeURL string, 
 		slog.String("website_url", websiteURL),
 		slog.String("content_type", responseHandler.ContentType()),
 	)
-	if subscriptions, localizedError := f.findSubscriptionsFromWebPage(websiteURL, responseHandler.ContentType(), bytes.NewReader(responseBody)); localizedError != nil {
+	if subscriptions, localizedError := f.findSubscriptionsFromWebPage(websiteURL, responseHandler.ContentType(), responseBody); localizedError != nil {
 		return nil, localizedError
 	} else if len(subscriptions) > 0 {
 		slog.Debug("Subscriptions found from web page", slog.String("website_url", websiteURL), slog.Any("subscriptions", subscriptions))
@@ -117,14 +116,14 @@ func (f *subscriptionFinder) FindSubscriptions(websiteURL, rssBridgeURL string, 
 	return nil, nil
 }
 
-func (f *subscriptionFinder) findSubscriptionsFromWebPage(websiteURL, contentType string, body io.Reader) (Subscriptions, *locale.LocalizedErrorWrapper) {
+func (f *subscriptionFinder) findSubscriptionsFromWebPage(websiteURL, contentType string, body []byte) (Subscriptions, *locale.LocalizedErrorWrapper) {
 	queries := map[string]string{
 		"link[type='application/rss+xml']":                                  parser.FormatRSS,
 		"link[type='application/atom+xml']":                                 parser.FormatAtom,
 		"link[type='application/json'], link[type='application/feed+json']": parser.FormatJSON,
 	}
 
-	htmlDocumentReader, err := encoding.NewCharsetReader(body, contentType)
+	htmlDocumentReader, err := encoding.NewCharsetReaderFromBytes(body, contentType)
 	if err != nil {
 		return nil, locale.NewLocalizedErrorWrapper(err, "error.unable_to_parse_html_document", err)
 	}
@@ -143,12 +142,16 @@ func (f *subscriptionFinder) findSubscriptionsFromWebPage(websiteURL, contentTyp
 
 	var subscriptions Subscriptions
 	subscriptionURLs := make(map[string]bool)
-	for query, kind := range queries {
-		doc.Find(query).Each(func(i int, s *goquery.Selection) {
+	for feedQuerySelector, feedFormat := range queries {
+		doc.Find(feedQuerySelector).Each(func(i int, s *goquery.Selection) {
 			subscription := new(subscription)
-			subscription.Type = kind
+			subscription.Type = feedFormat
 
 			if feedURL, exists := s.Attr("href"); exists && feedURL != "" {
+				// Ignore JSON feed URLs that contain "wp-json" to avoid confusion with WordPress REST API endpoints.
+				if feedFormat == parser.FormatJSON && strings.Contains(feedURL, "wp-json") {
+					return
+				}
 				subscription.URL, err = urllib.ResolveToAbsoluteURL(websiteURL, feedURL)
 				if err != nil {
 					return
@@ -323,8 +326,8 @@ func (f *subscriptionFinder) findSubscriptionsFromYouTube(websiteURL string) (Su
 
 // findCanonicalURL extracts the canonical URL from the HTML <link rel="canonical"> tag.
 // Returns the canonical URL if found, otherwise returns the effective URL.
-func (f *subscriptionFinder) findCanonicalURL(effectiveURL, contentType string, body io.Reader) string {
-	htmlDocumentReader, err := encoding.NewCharsetReader(body, contentType)
+func (f *subscriptionFinder) findCanonicalURL(effectiveURL, contentType string, body []byte) string {
+	htmlDocumentReader, err := encoding.NewCharsetReaderFromBytes(body, contentType)
 	if err != nil {
 		return effectiveURL
 	}
